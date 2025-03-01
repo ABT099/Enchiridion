@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enchiridion.Api", "Enchirid
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enchiridion.Models", "Enchiridion.Models\Enchiridion.Models.csproj", "{AAA17B62-6452-436A-8881-C784F5DC0EBE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enchiridion.Data", "Enchiridion.Data\Enchiridion.Data.csproj", "{63C0B004-384F-4692-982A-904DBC8A8F29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{AAA17B62-6452-436A-8881-C784F5DC0EBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAA17B62-6452-436A-8881-C784F5DC0EBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAA17B62-6452-436A-8881-C784F5DC0EBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63C0B004-384F-4692-982A-904DBC8A8F29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63C0B004-384F-4692-982A-904DBC8A8F29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63C0B004-384F-4692-982A-904DBC8A8F29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63C0B004-384F-4692-982A-904DBC8A8F29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
