@@ -1,3 +1,4 @@
+using Enchiridion.Api;
 using Enchiridion.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,12 @@ builder.Services.AddDbContext<AppDbContext>(opts =>
     {
         opts.UseNpgsql(connectionString: builder.Configuration.GetConnectionString("Default")!)
             .UseSnakeCaseNamingConvention();
+    }, optionsLifetime: ServiceLifetime.Singleton);
 
-    },
-    contextLifetime: ServiceLifetime.Scoped,
-    optionsLifetime: ServiceLifetime.Singleton);
+builder.Services.AddDbContext<AuthDbContext>(opts =>
+    {
+        opts.UseNpgsql(connectionString: builder.Configuration.GetConnectionString("Auth")!);
+    }, optionsLifetime: ServiceLifetime.Singleton);
 
 var app = builder.Build();
 
