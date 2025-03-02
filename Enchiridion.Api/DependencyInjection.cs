@@ -1,3 +1,4 @@
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -10,7 +11,7 @@ public static class DependencyInjection
     public static void RegisterServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddOpenApi();
-
+        builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddDbContext<AppDbContext>(opts =>
         {
             opts.UseNpgsql(connectionString: builder.Configuration.GetConnectionString("Default")!)
