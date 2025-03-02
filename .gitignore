@@ -48,3 +48,5 @@ bld/
 msbuild.log
 msbuild.err
 msbuild.wrn
+
+/Enchiridion.Api/key

@@ -12,7 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Routine> Routines { get; set; }
     public DbSet<RoutineStep> RoutineSteps { get; set; }
     public DbSet<Todo> Todos { get; set; }
-    public DbSet<User> AppUsers { get; set; }
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
