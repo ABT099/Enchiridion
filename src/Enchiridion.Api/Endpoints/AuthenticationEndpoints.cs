@@ -7,11 +7,11 @@ namespace Enchiridion.Api.Endpoints;
 
 public static class AuthenticationEndpoints
 {
-    public static void AddAuthenticationEndpoints(this WebApplication app)
+    public static void AddAuthenticationEndpoints(this RouteGroupBuilder api)
     {
-        app.MapPost("auth/login", HandleLogin);
-        app.MapPost("auth/register", HandleRegister);
-        app.MapPost("auth/logout", HandleLogout);
+        api.MapPost("auth/login", HandleLogin);
+        api.MapPost("auth/register", HandleRegister);
+        api.MapPost("auth/logout", HandleLogout);
     }
 
     private static async Task<IResult> HandleLogin(

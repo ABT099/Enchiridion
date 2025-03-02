@@ -49,4 +49,4 @@ msbuild.log
 msbuild.err
 msbuild.wrn
 
-/Enchiridion.Api/key
+/src/Enchiridion.Api/key

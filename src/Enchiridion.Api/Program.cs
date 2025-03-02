@@ -68,6 +68,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.AddAuthenticationEndpoints();
+var api = app.MapGroup("api/");
+api.AddAuthenticationEndpoints();
+
 
 app.Run();
