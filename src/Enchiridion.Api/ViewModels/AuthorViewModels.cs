@@ -4,26 +4,28 @@ namespace Enchiridion.Api.ViewModels;
 
 public static class AuthorViewModels
 {
-    public static readonly Func<Author, object> CreateFlat = FlatProjection.Compile();
-        
-    public static Expression<Func<Author, object>> FlatProjection => 
-        author => new
-        {
-            author.Id,
-            author.Name,
-            author.AvatarUrl
-        };
+    public record BasicAuthorResponse(int Id, string Name);
+    public record AuthorResponse(int Id, string Name, IEnumerable<AuthorQuote> Quotes);
+    public record AuthorQuote(int Id, string Title);
+    
+    public static readonly Func<Author, BasicAuthorResponse> CreateFlat = FlatProjection.Compile();
 
-    public static Expression<Func<Author, object>> Projection =>
-        author => new
-        {
+    public static Expression<Func<Author, BasicAuthorResponse>> FlatProjection =>
+        author => new BasicAuthorResponse
+        (
+            author.Id,
+            author.Name
+        );
+
+    public static Expression<Func<Author, AuthorResponse>> Projection =>
+        author => new AuthorResponse
+        (
             author.Id,
             author.Name,
-            author.AvatarUrl,
-            Quotes = author.Quotes.Select(x => new
-            {
+            author.Quotes.Select(x => new AuthorQuote
+            (
                 x.Id,
-                Title = x.QuoteText.Substring(0, 20)
-            })
-        };
+                x.QuoteText.Substring(0, 20)
+            ))
+        );
 }

@@ -4,11 +4,13 @@ namespace Enchiridion.Api.ViewModels;
     
 public static class QuoteViewModels
 {
-    public static Expression<Func<Quote, object>> Projection =>
-        quote => new
-        {
+    public record QuoteResponse(int Id, string QuoteText, AuthorViewModels.BasicAuthorResponse Author);
+
+    public static Expression<Func<Quote, QuoteResponse>> Projection =>
+        quote => new QuoteResponse
+        (
             quote.Id,
             quote.QuoteText,
-            Author = AuthorViewModels.CreateFlat(quote.Author)
-        };
+            AuthorViewModels.CreateFlat(quote.Author)
+        );
 }
