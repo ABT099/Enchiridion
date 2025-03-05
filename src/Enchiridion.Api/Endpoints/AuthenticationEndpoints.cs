@@ -17,8 +17,7 @@ public static class AuthenticationEndpoints
     private static async Task<IResult> HandleLogin(
         LoginRequest request,
         SignInManager<IdentityUser> signInManager,
-        UserManager<IdentityUser> userManager,
-        AppDbContext db)
+        UserManager<IdentityUser> userManager)
     {
         var authUser = await userManager.FindByNameAsync(request.Username);
 
@@ -34,16 +33,6 @@ public static class AuthenticationEndpoints
             return Results.Unauthorized();
         }
 
-        var userInfo = await db.Users
-            .AsNoTracking()
-            .Select(x => new { x.Id, x.AuthId })
-            .FirstOrDefaultAsync(x => x.AuthId == authUser.Id);
-
-        if (userInfo is null)
-        {
-            return Results.NotFound("There is no user with the given username.");
-        }
-
         var roles = await userManager.GetRolesAsync(authUser);
 
         if (roles.Count > 1)
@@ -51,7 +40,7 @@ public static class AuthenticationEndpoints
             return Results.BadRequest("User have more than one role. please contact support.");
         }
 
-        var token = GenerateToken(userInfo.Id, roles.First());
+        var token = GenerateToken(authUser.Id, roles.First());
 
         return Results.Ok(token);
     }
@@ -92,15 +81,15 @@ public static class AuthenticationEndpoints
 
         await userManager.AddToRoleAsync(identityUser, EnchiridionConstants.Roles.User);
 
-        var token = GenerateToken(user.Id, EnchiridionConstants.Roles.User);
+        var token = GenerateToken(identityUser.Id, EnchiridionConstants.Roles.User);
 
         return Results.Ok(token);
     }
 
-    private static string GenerateToken(int userId, string role)
+    private static string GenerateToken(string authId, string role)
     {
         var identity = new ClaimsIdentity();
-        identity.AddClaim(new Claim(EnchiridionConstants.Claims.UserId, userId.ToString()));
+        identity.AddClaim(new Claim(EnchiridionConstants.Claims.AuthId, authId));
         identity.AddClaim(new Claim(EnchiridionConstants.Claims.Role, role));
 
         var key = new RsaSecurityKey(EnchiridionConstants.Keys.RsaKey);
