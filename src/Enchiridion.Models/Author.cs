@@ -7,4 +7,5 @@ public class Author
     public required string Name { get; set; }
     public string? Description { get; set; }
     public string? AvatarUrl { get; set; }
+    public List<Quote> Quotes { get; set; } = [];
 }

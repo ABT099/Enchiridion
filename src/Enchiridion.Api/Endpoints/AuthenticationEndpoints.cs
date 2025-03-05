@@ -7,7 +7,7 @@ namespace Enchiridion.Api.Endpoints;
 
 public static class AuthenticationEndpoints
 {
-    public static void AddAuthenticationEndpoints(this RouteGroupBuilder api)
+    public static void AddAuthenticationEndpoints(this WebApplication api)
     {
         api.MapPost("auth/login", HandleLogin);
         api.MapPost("auth/register", HandleRegister);
@@ -18,7 +18,7 @@ public static class AuthenticationEndpoints
         LoginRequest request,
         SignInManager<IdentityUser> signInManager,
         UserManager<IdentityUser> userManager,
-        AppDbContext ctx)
+        AppDbContext db)
     {
         var authUser = await userManager.FindByNameAsync(request.Username);
 
@@ -34,7 +34,7 @@ public static class AuthenticationEndpoints
             return Results.Unauthorized();
         }
 
-        var userInfo = await ctx.Users
+        var userInfo = await db.Users
             .AsNoTracking()
             .Select(x => new { x.Id, x.AuthId })
             .FirstOrDefaultAsync(x => x.AuthId == authUser.Id);
@@ -57,7 +57,7 @@ public static class AuthenticationEndpoints
     }
 
     private static async Task<IResult> HandleRegister(
-        AppDbContext ctx,
+        AppDbContext db,
         RegisterRequest request,
         UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager)
@@ -87,8 +87,8 @@ public static class AuthenticationEndpoints
             UserName = request.Email,
         };
 
-        await ctx.Users.AddAsync(user);
-        await ctx.SaveChangesAsync();
+        await db.Users.AddAsync(user);
+        await db.SaveChangesAsync();
 
         await userManager.AddToRoleAsync(identityUser, EnchiridionConstants.Roles.User);
 
