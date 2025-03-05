@@ -1,7 +1,5 @@
-using System.Security.Claims;
+using Enchiridion.Api.Services;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Enchiridion.Api.Endpoints;
 
@@ -9,13 +7,14 @@ public static class AuthenticationEndpoints
 {
     public static void AddAuthenticationEndpoints(this WebApplication api)
     {
-        api.MapPost("auth/login", HandleLogin);
-        api.MapPost("auth/register", HandleRegister);
+        api.MapPost("auth/login", HandleLogin).AllowAnonymous();
+        api.MapPost("auth/register", HandleRegister).AllowAnonymous();
         api.MapPost("auth/logout", HandleLogout);
     }
 
     private static async Task<IResult> HandleLogin(
         LoginRequest request,
+        AppDbContext db,
         SignInManager<IdentityUser> signInManager,
         UserManager<IdentityUser> userManager)
     {
@@ -33,6 +32,16 @@ public static class AuthenticationEndpoints
             return Results.Unauthorized();
         }
 
+        var userInfo = await db.Users
+            .AsNoTracking()
+            .Select(x => new { x.Id, x.AuthId })
+            .FirstOrDefaultAsync(x => x.AuthId == authUser.Id);
+
+        if (userInfo is null)
+        {
+            return Results.NotFound("There is no user with the given username.");
+        }
+        
         var roles = await userManager.GetRolesAsync(authUser);
 
         if (roles.Count > 1)
@@ -40,14 +49,14 @@ public static class AuthenticationEndpoints
             return Results.BadRequest("User have more than one role. please contact support.");
         }
 
-        var token = GenerateToken(authUser.Id, roles.First());
+        var token = TokenService.GenerateToken(userInfo.Id, roles.First());
 
         return Results.Ok(token);
     }
 
     private static async Task<IResult> HandleRegister(
-        AppDbContext db,
         RegisterRequest request,
+        AppDbContext db,
         UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager)
     {
@@ -81,48 +90,27 @@ public static class AuthenticationEndpoints
 
         await userManager.AddToRoleAsync(identityUser, EnchiridionConstants.Roles.User);
 
-        var token = GenerateToken(identityUser.Id, EnchiridionConstants.Roles.User);
+        var token = TokenService.GenerateToken(user.Id, EnchiridionConstants.Roles.User);
 
         return Results.Ok(token);
     }
 
-    private static string GenerateToken(string authId, string role)
-    {
-        var identity = new ClaimsIdentity();
-        identity.AddClaim(new Claim(EnchiridionConstants.Claims.AuthId, authId));
-        identity.AddClaim(new Claim(EnchiridionConstants.Claims.Role, role));
-
-        var key = new RsaSecurityKey(EnchiridionConstants.Keys.RsaKey);
-
-        var handler = new JsonWebTokenHandler();
-        var token = handler.CreateToken(new SecurityTokenDescriptor
-        {
-            Issuer = "https://localhost:5001",
-            Subject = identity,
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256)
-        });
-
-        return token;
-    }
+    
 
     private static IResult HandleLogout(HttpContext context)
     {
-        var authorizationHeader = context.Request.Headers.Authorization.ToString();
-        if (string.IsNullOrWhiteSpace(authorizationHeader) ||
-            !authorizationHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        try
         {
+            var token = TokenService.GetTokenFromContext(context);
+            
+            EnchiridionConstants.BlackList.Add(token);
+
+            return Results.Ok();
+        }
+        catch (TokenService.InvalidTokenException e)
+        {
+            Console.WriteLine(e);
             return Results.Unauthorized();
         }
-
-        var token = authorizationHeader["Bearer ".Length..].Trim();
-
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return Results.BadRequest("Invalid token.");
-        }
-
-        EnchiridionConstants.BlackList.Add(token);
-
-        return Results.Ok();
     }
 }

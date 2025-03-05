@@ -1,3 +1,4 @@
+using Enchiridion.Api.Services;
 using Enchiridion.Api.ViewModels;
 using AuthorRequest = Enchiridion.Api.Requests.AuthorRequest;
 
@@ -9,10 +10,21 @@ public static class AuthorEndpoints
     {
         api.MapGet("authors", GetAll);
         api.MapGet("authors/{id:int}", GetById);
-        api.MapPost("authors", Create);
+        api.MapPost("authors", Create)
+            .RequireAuthorization(
+                x => x.RequireRole(EnchiridionConstants.Roles.Admin)
+            );
         api.MapPost("authors/link-user/{userId:int}", LinkToUser);
-        api.MapPut("authors/{id:int}", Update);
-        api.MapDelete("authors/{id:int}", Delete);
+        api.MapPut("authors/{id:int}", Update)
+            .RequireAuthorization(
+                x => x.RequireRole(EnchiridionConstants.Roles.Admin)
+            );
+        api.MapPut("authors", UpdateLinked);
+        
+        api.MapDelete("authors/{id:int}", Delete)
+            .RequireAuthorization(
+                x => x.RequireRole(EnchiridionConstants.Roles.Admin)
+            );
     }
 
     private static async Task<IResult> GetAll(AppDbContext db)
@@ -72,6 +84,24 @@ public static class AuthorEndpoints
         return Results.Ok();
     }
     
+    private static async Task<IResult> UpdateLinked(AuthorRequest request, AppDbContext db, HttpContext httpContext)
+    {
+        var id = TokenService.GetUserId(httpContext);
+        
+        var author = await db.Authors.FirstOrDefaultAsync(x => x.UserId == id);
+
+        if (author is null)
+        {
+            return Results.NotFound();
+        }
+
+        var updated = await HandleUpdate(author, request, db);
+        
+        return updated
+            ? Results.Ok()
+            : Results.BadRequest("No Updates Detected");
+    }
+    
     private static async Task<IResult> Update(int id, AuthorRequest request, AppDbContext db)
     {
         var author = await db.Authors.FirstOrDefaultAsync(x => x.Id == id);
@@ -81,11 +111,15 @@ public static class AuthorEndpoints
             return Results.NotFound();
         }
 
-        if (author.UserId is not null)
-        {
-            return Results.BadRequest("Author is linked to a user, update the user info to update the author");
-        }
-        
+        var updated = await HandleUpdate(author, request, db);
+
+        return updated
+            ? Results.Ok()
+            : Results.BadRequest("No Updates Detected");
+    }
+
+    private static async Task<bool> HandleUpdate(Author author, AuthorRequest request, AppDbContext db)
+    {
         var updated = false;
 
         if (author.Name != request.Name)
@@ -100,13 +134,8 @@ public static class AuthorEndpoints
             updated = true;
         }
         
-        if (updated is false)
-        {
-            return Results.BadRequest("No Updates Detected");
-        }
-        
         await db.SaveChangesAsync();
-        return Results.Ok();
+        return updated;
     }
     
     private static async Task<IResult> Delete(int id, AppDbContext db)
