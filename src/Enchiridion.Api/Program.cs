@@ -77,5 +77,6 @@ var api = app.MapGroup("api/");
 
 api.AddQuoteEndpoints();
 api.AddAuthorEndpoints();
+api.AddUserEndpoints();
 
 app.Run();
