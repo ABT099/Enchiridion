@@ -19,11 +19,6 @@ public static class HabitEndpoints
     {
         var userId = TokenService.GetUserId(httpContext);
         
-        if (!await UserExists(userId, db))
-        {
-            return Results.NotFound("User not found");
-        }
-        
         var habits = await db.Habits
             .Where(x => x.UserId == userId)
             .Select(HabitViewModels.FlatProjection)
@@ -35,11 +30,6 @@ public static class HabitEndpoints
     private static async Task<IResult> GetById(int id, HttpContext httpContext, AppDbContext db)
     {
         var userId = TokenService.GetUserId(httpContext);
-        
-        if (!await UserExists(userId, db))
-        {
-            return Results.NotFound("User not found");
-        }
         
         var habit = await db.Habits
             .Where(x => x.Id == id && x.UserId == userId)

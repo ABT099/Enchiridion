@@ -68,31 +68,10 @@ public static class UserEndpoints
             return Results.NotFound();
         }
         
-        var updated = false;
-
-        if (user.FirstName != request.FirstName)
-        {
-            user.FirstName = request.FirstName;
-            updated = true;
-        }
-
-        if (user.LastName != request.LastName)
-        {
-            user.LastName = request.LastName;
-            updated = true;
-        }
-
-        if (user.UserName != request.UserName)
-        {
-            user.UserName = request.UserName;
-            updated = true;
-        }
-
-        if (updated is false)
-        {
-            return Results.BadRequest("No update detected");
-        }
-
+        user.FirstName = request.FirstName;
+        user.LastName = request.LastName;
+        user.UserName = request.UserName;
+        
         if (user.Author is not null)
         {
             user.Author.Name = request.FirstName + " " + request.LastName;

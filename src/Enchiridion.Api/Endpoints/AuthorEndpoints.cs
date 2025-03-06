@@ -214,12 +214,12 @@ public static class AuthorEndpoints
         {
             return Results.NotFound();
         }
+        author.Description = request.Description;
+        author.Name = request.Name;
 
-        var updated = await HandleUpdate(author, request, db);
-        
-        return updated
-            ? Results.Ok()
-            : Results.BadRequest("No Updates Detected");
+        await db.SaveChangesAsync();
+
+        return Results.Ok();
     }
     
     private static async Task<IResult> Update(int id, AuthorRequest request, AppDbContext db)
@@ -231,31 +231,12 @@ public static class AuthorEndpoints
             return Results.NotFound();
         }
 
-        var updated = await HandleUpdate(author, request, db);
+        author.Description = request.Description;
+        author.Name = request.Name;
 
-        return updated
-            ? Results.Ok()
-            : Results.BadRequest("No Updates Detected");
-    }
-
-    private static async Task<bool> HandleUpdate(Author author, AuthorRequest request, AppDbContext db)
-    {
-        var updated = false;
-
-        if (author.Name != request.Name)
-        {
-            author.Name = request.Name;
-            updated = true;
-        }
-
-        if (author.Description != request.Description)
-        {
-            author.Description = request.Description;
-            updated = true;
-        }
-        
         await db.SaveChangesAsync();
-        return updated;
+
+        return Results.Ok();
     }
     
     private static async Task<IResult> Delete(int id, AppDbContext db)

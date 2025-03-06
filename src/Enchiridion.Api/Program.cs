@@ -80,5 +80,6 @@ api.AddAuthorEndpoints();
 api.AddUserEndpoints();
 api.AddHabitCategoryEndpoints();
 api.AddHabitEndpoints();
+api.AddTodoEndpoints();
 
 app.Run();

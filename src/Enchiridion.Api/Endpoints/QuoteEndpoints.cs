@@ -83,12 +83,7 @@ public static class QuoteEndpoints
         {
             return Results.NotFound();
         }
-
-        if (quote.QuoteText == request.QuoteText)
-        {
-            return Results.BadRequest("No updates have been detected");
-        }
-        
+         
         quote.QuoteText = request.QuoteText;
         
         await db.SaveChangesAsync();
