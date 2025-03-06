@@ -78,5 +78,6 @@ var api = app.MapGroup("api/");
 api.AddQuoteEndpoints();
 api.AddAuthorEndpoints();
 api.AddUserEndpoints();
+api.AddHabitCategoryEndpoints();
 
 app.Run();
