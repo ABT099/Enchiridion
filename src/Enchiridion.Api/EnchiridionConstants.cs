@@ -13,6 +13,7 @@ public struct EnchiridionConstants
     public struct Claims
     {
         public const string Id = nameof(Id);
+        public const string AuthId = nameof(AuthId);
         public const string Role = nameof(Role);
     }
 

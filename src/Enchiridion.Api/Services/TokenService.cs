@@ -6,10 +6,11 @@ namespace Enchiridion.Api.Services;
 
 public static class TokenService
 {
-    public static string GenerateToken(int id, string role)
+    public static string GenerateToken(int id, string authId, string role)
     {
         var identity = new ClaimsIdentity();
         identity.AddClaim(new Claim(EnchiridionConstants.Claims.Id, id.ToString()));
+        identity.AddClaim(new Claim(EnchiridionConstants.Claims.AuthId, authId));
         identity.AddClaim(new Claim(EnchiridionConstants.Claims.Role, role));
 
         var key = new RsaSecurityKey(EnchiridionConstants.Keys.RsaKey);
@@ -29,6 +30,10 @@ public static class TokenService
         int.TryParse(GetClaim(EnchiridionConstants.Claims.Id, httpContext), out var id) 
             ? id
             : throw new Exception("Invalid id");
+    
+    public static string GetAuthId(HttpContext httpContext) =>
+        GetClaim(EnchiridionConstants.Claims.AuthId, httpContext);
+    
     private static string GetClaim(string claimType, HttpContext context) => context.User.Claims
         .FirstOrDefault(x => x.Type.Equals(claimType))?.Value!;
 

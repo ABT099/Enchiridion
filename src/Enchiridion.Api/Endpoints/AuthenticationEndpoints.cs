@@ -10,6 +10,7 @@ public static class AuthenticationEndpoints
         api.MapPost("auth/login", HandleLogin).AllowAnonymous();
         api.MapPost("auth/register", HandleRegister).AllowAnonymous();
         api.MapPost("auth/logout", HandleLogout);
+        api.MapPost("auth/change-password", ChangePassword);
     }
 
     private static async Task<IResult> HandleLogin(
@@ -49,7 +50,7 @@ public static class AuthenticationEndpoints
             return Results.BadRequest("User have more than one role. please contact support.");
         }
 
-        var token = TokenService.GenerateToken(userInfo.Id, roles.First());
+        var token = TokenService.GenerateToken(userInfo.Id, authUser.Id,roles.First());
 
         return Results.Ok(token);
     }
@@ -90,11 +91,28 @@ public static class AuthenticationEndpoints
 
         await userManager.AddToRoleAsync(identityUser, EnchiridionConstants.Roles.User);
 
-        var token = TokenService.GenerateToken(user.Id, EnchiridionConstants.Roles.User);
+        var token = TokenService.GenerateToken(user.Id,  identityUser.Id,EnchiridionConstants.Roles.User);
 
         return Results.Ok(token);
     }
 
+    private static async Task<IResult> ChangePassword(HttpContext context, ChangePasswordRequest request, UserManager<IdentityUser> userManager)
+    {
+        var authId = TokenService.GetAuthId(context);
+        
+        var user = await userManager.FindByNameAsync(authId);
+
+        if (user is null)
+        {
+            return Results.NotFound("User does not exist.");
+        }
+        
+        var result = await userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
+
+        return result.Succeeded 
+            ? Results.Ok() 
+            : Results.BadRequest();
+    }
     
 
     private static IResult HandleLogout(HttpContext context)
