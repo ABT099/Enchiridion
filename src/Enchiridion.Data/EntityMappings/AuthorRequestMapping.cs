@@ -10,6 +10,6 @@ public class AuthorRequestMapping : IEntityTypeConfiguration<AuthorRequest>
             .HasForeignKey(ar => ar.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(ar => ar.UserId);
+        builder.HasIndex(ar => ar.UserId).IsUnique();
     }
 }

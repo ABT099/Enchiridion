@@ -59,7 +59,9 @@ public static class UserEndpoints
     {
         var id = TokenService.GetUserId(httpContext);
         
-        var user = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
+        var user = await db.Users
+            .Include(x => x.Author)
+            .FirstOrDefaultAsync(x => x.Id == id);
 
         if (user is null)
         {
@@ -89,6 +91,11 @@ public static class UserEndpoints
         if (updated is false)
         {
             return Results.BadRequest("No update detected");
+        }
+
+        if (user.Author is not null)
+        {
+            user.Author.Name = request.FirstName + " " + request.LastName;
         }
         
         await db.SaveChangesAsync();

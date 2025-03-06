@@ -10,15 +10,37 @@ public static class AuthorEndpoints
     {
         api.MapGet("authors", GetAll);
         api.MapGet("authors/{id:int}", GetById);
+        
         api.MapPost("authors", Create)
             .RequireAuthorization(
                 x => x.RequireRole(EnchiridionConstants.Roles.Admin)
             );
-        api.MapPost("authors/link-user/{userId:int}", LinkToUser);
+
+        api.MapPost("authors/become-one", RequestToBeAnAuthor)
+            .RequireAuthorization(
+                x => x.RequireRole(EnchiridionConstants.Roles.Admin)
+            );
+        
+        api.MapPost("authors/revoke", RevokeAuthorship)
+            .RequireAuthorization(
+                x => x.RequireRole(EnchiridionConstants.Roles.Admin)
+            );
+        
+        api.MapPost("authors/link-user/{requestId:int}", LinkToUser)
+            .RequireAuthorization(
+                x => x.RequireRole(EnchiridionConstants.Roles.Admin)
+            );
+        
+        api.MapPost("authors/reject-user/{requestId:int}", RejectUser)
+            .RequireAuthorization(
+                x => x.RequireRole(EnchiridionConstants.Roles.Admin)
+            );
+        
         api.MapPut("authors/{id:int}", Update)
             .RequireAuthorization(
                 x => x.RequireRole(EnchiridionConstants.Roles.Admin)
             );
+        
         api.MapPut("authors", UpdateLinked);
         
         api.MapDelete("authors/{id:int}", Delete)
@@ -63,24 +85,120 @@ public static class AuthorEndpoints
         return Results.Ok();
     }
 
-    private static async Task<IResult> LinkToUser(int userId, AppDbContext db)
+    private static async Task<IResult> RequestToBeAnAuthor(BecomeAuthorRequest request, AppDbContext db)
     {
-        var user = await db.Users.FindAsync(userId);
+        var user = await db.Users
+            .Include(u => u.Author)
+            .FirstOrDefaultAsync(u => u.Id == request.UserId);
 
         if (user is null)
         {
-            return Results.NotFound();
+            return Results.NotFound("User not found");
+        }
+        
+        if (user.Author is not null)
+        {
+            return Results.BadRequest("User is already an author.");
+        }
+        
+        var authorRequest = new Models.AuthorRequest
+        {
+            UserId = request.UserId,
+            Message = request.Message,
+        };
+        
+        await db.AuthorRequests.AddAsync(authorRequest);
+        await db.SaveChangesAsync();
+        return Results.Ok();
+    }
+    
+    private static async Task<IResult> RevokeAuthorship(int userId, AppDbContext db)
+    {
+        var user = await db.Users
+            .Include(x => x.Author)
+            .FirstOrDefaultAsync(x => x.Id == userId);
+        
+        if (user is null)
+        {
+            return Results.NotFound("User not found");
+        }
+        
+        if (user.Author is null)
+        {
+            return Results.BadRequest("User is not an author.");
+        }
+        
+        user.Author = null;
+        
+        await db.SaveChangesAsync();
+        return Results.Ok();
+    }
+
+    private static async Task<IResult> LinkToUser(int requestId, AppDbContext db)
+    {
+        var authorRequest = await db.AuthorRequests.FirstOrDefaultAsync(x => x.Id == requestId);
+
+        if (authorRequest is null)
+        {
+            return Results.NotFound("Request not found");
+        }
+
+        var user = await db.Users
+            .Include(x => x.Author)
+            .FirstOrDefaultAsync(x => x.Id == authorRequest.UserId);
+
+        if (user is null)
+        {
+            return Results.NotFound("User not found");
+        }
+
+        if (user.Author is not null)
+        {
+            return Results.BadRequest("User is already an author.");
         }
 
         var author = new Author
         {
-            UserId = userId,
-            Name = user.FirstName + " " + user.LastName
+            User = user,
+            Name = $"{user.FirstName} {user.LastName}"
         };
+
+        user.Author = author;
+        await db.Authors.AddAsync(author);
+
+        authorRequest.Status = RequestStatus.Approved;
         
-        db.Authors.Add(author);
         await db.SaveChangesAsync();
         
+        return Results.Ok();
+    }
+
+    private static async Task<IResult> RejectUser(int requestId, AppDbContext db)
+    {
+        var authorRequest = await db.AuthorRequests.FirstOrDefaultAsync(x => x.Id == requestId);
+
+        if (authorRequest is null)
+        {
+            return Results.NotFound("Request not found");
+        }
+
+        var user = await db.Users
+            .Include(x => x.Author)
+            .FirstOrDefaultAsync(x => x.Id == authorRequest.UserId);
+
+        if (user is null)
+        {
+            return Results.NotFound("User not found");
+        }
+
+        if (user.Author is not null)
+        {
+            return Results.BadRequest("User is already an author.");
+        }
+        
+        authorRequest.Status = RequestStatus.Rejected;
+        
+        await db.SaveChangesAsync();
         return Results.Ok();
     }
     
@@ -88,7 +206,9 @@ public static class AuthorEndpoints
     {
         var id = TokenService.GetUserId(httpContext);
         
-        var author = await db.Authors.FirstOrDefaultAsync(x => x.UserId == id);
+        var author = await db.Authors
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.User != null && x.User.Id == id);
 
         if (author is null)
         {

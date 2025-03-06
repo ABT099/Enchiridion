@@ -5,5 +5,5 @@ namespace Enchiridion.Models;
 public class Quote : ModelBase
 {
     public required string QuoteText { get; set; }
-    public required Author Author { get; set; }
+    public required Author Author { get; init; }
 }
