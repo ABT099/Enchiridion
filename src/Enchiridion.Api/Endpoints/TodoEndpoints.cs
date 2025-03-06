@@ -1,4 +1,5 @@
 using Enchiridion.Api.Services;
+using Enchiridion.Api.ViewModels;
 
 namespace Enchiridion.Api.Endpoints;
 
@@ -19,7 +20,8 @@ public static class TodoEndpoints
         var userId = TokenService.GetUserId(context);
         
         var todos = await db.Todos
-            .Where(x => x.UserId == userId)
+            .Where(x => x.UserId == userId && x.RoutineStep == null)
+            .Select(TodoViewModels.Projection)
             .ToListAsync();
 
         return Results.Ok(todos);
