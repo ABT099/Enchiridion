@@ -79,5 +79,6 @@ api.AddQuoteEndpoints();
 api.AddAuthorEndpoints();
 api.AddUserEndpoints();
 api.AddHabitCategoryEndpoints();
+api.AddHabitEndpoints();
 
 app.Run();
