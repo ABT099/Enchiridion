@@ -10,5 +10,7 @@ public class HabitMapping : IEntityTypeConfiguration<Habit>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(d => d.UserId);
+
+        builder.OwnsOne(h => h.HabitOptions);
     }
 }

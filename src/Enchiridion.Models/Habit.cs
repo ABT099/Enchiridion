@@ -9,6 +9,7 @@ public class Habit : ModelBase
     public string? Description { get; set; }
     public required HabitCategory HabitCategory { get; set; }
     public HabitStatus Status { get; set; } = HabitStatus.Active;
+    public RepeatOptions HabitOptions { get; set; }
 }
 
 public enum HabitStatus

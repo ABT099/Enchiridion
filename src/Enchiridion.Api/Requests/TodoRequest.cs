@@ -1,3 +1,3 @@
 namespace Enchiridion.Api.Requests;
 
-public record TodoRequest(string Name);
+public record TodoRequest(string Name, RepeatInterval? RepeatInterval);

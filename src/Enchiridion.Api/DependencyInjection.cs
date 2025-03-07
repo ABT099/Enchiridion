@@ -1,3 +1,4 @@
+using Enchiridion.Api.BackgroundServices;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +21,10 @@ public static class DependencyInjection
         }, optionsLifetime: ServiceLifetime.Singleton);
 
         builder.Services.AddAuth(connectionString: builder.Configuration.GetConnectionString("Auth")!);
+
+        builder.Services.AddHostedService<DailyRefreshIntervalBackgroundService>();
+        builder.Services.AddHostedService<WeeklyRefreshIntervalBackgroundService>();
+        builder.Services.AddHostedService<MonthlyRefreshIntervalBackgroundService>();
     }
 
     private static void AddAuth(this IServiceCollection services, string connectionString)

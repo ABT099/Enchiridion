@@ -11,5 +11,7 @@ public class TodoMapping : IEntityTypeConfiguration<Todo>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(t => t.UserId);
+
+        builder.OwnsOne(t => t.TodoOptions);
     }
 }

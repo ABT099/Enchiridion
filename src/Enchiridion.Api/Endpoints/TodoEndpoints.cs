@@ -44,11 +44,28 @@ public static class TodoEndpoints
     {
         var userId = TokenService.GetUserId(context);
 
-        var todo = new Todo
+        Todo todo;
+        
+        if (request.RepeatInterval is not null)
         {
-            UserId = userId,
-            Name = request.Name
-        };
+            todo = new Todo
+            {
+                UserId = userId,
+                Name = request.Name,
+                TodoOptions = new RepeatOptions
+                {
+                    RepeatInterval = request.RepeatInterval.Value,
+                }
+            };
+        }
+        else
+        {
+            todo = new Todo
+            {
+                UserId = userId,
+                Name = request.Name
+            };
+        }
 
         await db.Todos.AddAsync(todo);
         await db.SaveChangesAsync();
@@ -68,6 +85,21 @@ public static class TodoEndpoints
         }
 
         todo.Name = request.Name;
+
+        if (request.RepeatInterval is not null)
+        {
+            if (todo.TodoOptions is null)
+            {
+                todo.TodoOptions = new RepeatOptions
+                {
+                    RepeatInterval = request.RepeatInterval.Value,
+                };
+            }
+            else
+            {
+                todo.TodoOptions.RepeatInterval = request.RepeatInterval.Value;
+            }
+        }
         
         await db.SaveChangesAsync();
         return Results.Ok();

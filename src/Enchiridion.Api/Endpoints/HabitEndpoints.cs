@@ -62,7 +62,11 @@ public static class HabitEndpoints
             UserId = userId,
             Name = request.Name,
             Description = request.Description,
-            HabitCategory = category
+            HabitCategory = category,
+            HabitOptions = new RepeatOptions
+            {
+                RepeatInterval = request.RepeatInterval
+            }
         };
         
         await db.Habits.AddAsync(habit);
@@ -91,6 +95,7 @@ public static class HabitEndpoints
         habit.Name = request.Name;
         habit.Description = request.Description;
         habit.HabitCategory = category;
+        habit.HabitOptions.RepeatInterval = request.RepeatInterval;
         
         await db.SaveChangesAsync();
         return Results.Ok();
