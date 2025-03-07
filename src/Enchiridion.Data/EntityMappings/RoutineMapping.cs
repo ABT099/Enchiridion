@@ -13,6 +13,7 @@ public class RoutineMapping : IEntityTypeConfiguration<Routine>
 
         builder.HasMany(r => r.Steps)
             .WithOne()
-            .HasForeignKey(r => r.RoutineId);
+            .HasForeignKey(r => r.RoutineId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
