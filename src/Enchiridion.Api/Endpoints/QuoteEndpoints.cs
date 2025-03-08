@@ -17,6 +17,7 @@ public static class QuoteEndpoints
     private static async Task<IResult> GetAll(AppDbContext db)
     {
         var quotes = await db.Quotes
+            .AsNoTracking()
             .Select(QuoteViewModels.Projection)
             .ToListAsync();
 
@@ -26,6 +27,7 @@ public static class QuoteEndpoints
     private static async Task<IResult> GetById(int id, AppDbContext ctx)
     {
         var quote = await ctx.Quotes
+            .AsNoTracking()
             .Where(x => x.Id == id)
             .Select(QuoteViewModels.Projection)
             .FirstOrDefaultAsync();
@@ -37,7 +39,7 @@ public static class QuoteEndpoints
 
     private static async Task<IResult> GetRandom(AppDbContext db)
     {
-        var count = await db.Quotes.CountAsync();
+        var count = await db.Quotes.AsNoTracking().CountAsync();
 
         if (count < 1)
         {

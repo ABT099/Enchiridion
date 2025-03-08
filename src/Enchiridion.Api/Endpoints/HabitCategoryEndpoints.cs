@@ -25,6 +25,7 @@ public static class HabitCategoryEndpoints
     private static async Task<IResult> GetAll(AppDbContext db)
     {
         var categories = await db.HabitCategories
+            .AsNoTracking()
             .Select(HabitCategoryViewModels.Projection)
             .ToListAsync();
         
@@ -34,6 +35,7 @@ public static class HabitCategoryEndpoints
     private static async Task<IResult> GetById(int id, AppDbContext db)
     {
         var category = await db.HabitCategories
+            .AsNoTracking()
             .Select(HabitCategoryViewModels.Projection)
             .FirstOrDefaultAsync(x => x.Id == id);
         
@@ -74,7 +76,7 @@ public static class HabitCategoryEndpoints
 
     private static async Task<IResult> Delete(int id, AppDbContext db)
     {
-        var category = await db.HabitCategories.FirstOrDefaultAsync(x => x.Id == id);
+        var category = await db.HabitCategories.FindAsync(id);
 
         if (category is null)
         {

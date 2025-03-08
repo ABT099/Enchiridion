@@ -52,6 +52,7 @@ public static class AuthorEndpoints
     private static async Task<IResult> GetAll(AppDbContext db)
     {
         var authors = await db.Authors
+            .AsNoTracking()
             .Select(AuthorViewModels.FlatProjection)
             .ToListAsync();
         
@@ -61,6 +62,7 @@ public static class AuthorEndpoints
     private static async Task<IResult> GetById(int id, AppDbContext db)
     {
         var author = await db.Authors
+            .AsNoTracking()
             .Include(x => x.Quotes)
             .Where(x => x.Id == id)
             .Select(AuthorViewModels.Projection)
@@ -79,7 +81,7 @@ public static class AuthorEndpoints
             Description = request.Description
         };
         
-        db.Authors.Add(author);
+        await db.Authors.AddAsync(author);
         await db.SaveChangesAsync();
 
         return Results.Ok();
@@ -88,6 +90,7 @@ public static class AuthorEndpoints
     private static async Task<IResult> RequestToBeAnAuthor(BecomeAuthorRequest request, AppDbContext db)
     {
         var user = await db.Users
+            .AsNoTracking()
             .Include(u => u.Author)
             .FirstOrDefaultAsync(u => u.Id == request.UserId);
 
@@ -183,6 +186,7 @@ public static class AuthorEndpoints
         }
 
         var user = await db.Users
+            .AsNoTracking()
             .Include(x => x.Author)
             .FirstOrDefaultAsync(x => x.Id == authorRequest.UserId);
 
@@ -241,7 +245,7 @@ public static class AuthorEndpoints
     
     private static async Task<IResult> Delete(int id, AppDbContext db)
     {
-        var author = await db.Authors.FirstOrDefaultAsync(x => x.Id == id);
+        var author = await db.Authors.FindAsync(id);
 
         if (author is null)
         {

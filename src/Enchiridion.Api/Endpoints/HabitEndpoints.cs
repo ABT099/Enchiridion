@@ -20,6 +20,7 @@ public static class HabitEndpoints
         var userId = TokenService.GetUserId(httpContext);
         
         var habits = await db.Habits
+            .AsNoTracking()
             .Where(x => x.UserId == userId)
             .Select(HabitViewModels.FlatProjection)
             .ToListAsync();
@@ -32,6 +33,7 @@ public static class HabitEndpoints
         var userId = TokenService.GetUserId(httpContext);
         
         var habit = await db.Habits
+            .AsNoTracking()
             .Where(x => x.Id == id && x.UserId == userId)
             .Select(HabitViewModels.Projection)
             .FirstOrDefaultAsync();
@@ -136,7 +138,7 @@ public static class HabitEndpoints
     
     #region Helpers
     private static async Task<bool> UserExists(int userId, AppDbContext db)
-        => await db.Users.AnyAsync(u => u.Id == userId);
+        => await db.Users.AsNoTracking().AnyAsync(u => u.Id == userId);
 
     private static async Task<Habit?> GetHabitEntity(int id, int userId, AppDbContext db)
         => await db.Habits

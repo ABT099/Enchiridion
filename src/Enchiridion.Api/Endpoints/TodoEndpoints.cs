@@ -20,6 +20,7 @@ public static class TodoEndpoints
         var userId = TokenService.GetUserId(context);
         
         var todos = await db.Todos
+            .AsNoTracking()
             .Where(x => x.UserId == userId && x.RoutineStep == null)
             .Select(TodoViewModels.Projection)
             .ToListAsync();
@@ -32,6 +33,7 @@ public static class TodoEndpoints
         var userId = TokenService.GetUserId(context);
         
         var todo = await db.Todos
+            .AsNoTracking()
             .Where(x => x.Id == id && x.UserId == userId)
             .FirstOrDefaultAsync();
 

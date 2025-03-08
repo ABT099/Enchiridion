@@ -25,6 +25,7 @@ public static class UserEndpoints
     private static async Task<IResult> GetAll(AppDbContext db)
     {
         var users = await db.Users
+            .AsNoTracking()
             .Select(UserViewModels.FlatProjection)
             .ToListAsync();
 
@@ -34,6 +35,7 @@ public static class UserEndpoints
     private static async Task<IResult> GetById(int id, AppDbContext db)
     {
         var user = await db.Users
+            .AsNoTracking()
             .Select(UserViewModels.FlatProjection)
             .FirstOrDefaultAsync(x => x.Id == id);
         
@@ -47,6 +49,7 @@ public static class UserEndpoints
         var id = TokenService.GetUserId(httpContext);
         
         var user = await db.Users
+            .AsNoTracking()
             .Select(UserViewModels.FlatProjection)
             .FirstOrDefaultAsync(x => x.Id == id);
         

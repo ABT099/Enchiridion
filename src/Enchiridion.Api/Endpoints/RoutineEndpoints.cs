@@ -19,6 +19,8 @@ public static class RoutineEndpoints
         day ??= DateTime.Today.DayOfWeek;
         
         var routines = await db.Routines
+            .AsNoTracking()
+            .Include(x => x.Steps)
             .Where(x => x.UserId == userId && x.Days.Contains(day.Value))
             .ToListAsync();
         
@@ -30,6 +32,7 @@ public static class RoutineEndpoints
         var userId = TokenService.GetUserId(httpContext);
         
         var conflictDay = await db.Routines
+            .AsNoTracking()
             .Where(r => r.UserId == userId)
             .SelectMany(r => r.Days)
             .FirstOrDefaultAsync(day => request.Days.Contains(day));
@@ -64,6 +67,7 @@ public static class RoutineEndpoints
         var userId = TokenService.GetUserId(httpContext);
         
         var conflictDay = await db.Routines
+            .AsNoTracking()
             .Where(r => r.UserId == userId)
             .SelectMany(r => r.Days)
             .FirstOrDefaultAsync(day => request.AddedDays.Contains(day));
@@ -94,6 +98,7 @@ public static class RoutineEndpoints
         var userId = TokenService.GetUserId(httpContext);
         
         var routine = await db.Routines
+            .AsNoTracking()
             .Where(x => x.UserId == userId && x.Id == id)
             .FirstOrDefaultAsync();
 
