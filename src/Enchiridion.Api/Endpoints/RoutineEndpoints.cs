@@ -1,4 +1,5 @@
 using Enchiridion.Api.Services;
+using Enchiridion.Api.ViewModels;
 
 namespace Enchiridion.Api.Endpoints;
 
@@ -22,6 +23,7 @@ public static class RoutineEndpoints
             .AsNoTracking()
             .Include(x => x.Steps)
             .Where(x => x.UserId == userId && x.Days.Contains(day.Value))
+            .Select(RoutineViewModels.Projection)
             .ToListAsync();
         
         return Results.Ok(routines);

@@ -17,6 +17,8 @@ public static class HabitViewModels
         HabitCategoryViewModels.BasicHabitCategoryResponse Category,
         string Status);
 
+    public static readonly Func<Habit, BasicHabitResponse> CreateFlat = FlatProjection.Compile();
+
     public static Expression<Func<Habit, BasicHabitResponse>> FlatProjection =>
         habit => new BasicHabitResponse
         (

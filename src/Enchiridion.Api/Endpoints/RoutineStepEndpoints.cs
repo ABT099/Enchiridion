@@ -1,4 +1,5 @@
 using Enchiridion.Api.Services;
+using Enchiridion.Api.ViewModels;
 
 namespace Enchiridion.Api.Endpoints;
 
@@ -24,7 +25,10 @@ public static class RoutineStepEndpoints
     {
         var steps = await db.RoutineSteps
             .AsNoTracking()
+            .Include(s => s.Habits)
+            .Include(s => s.Todos)
             .Where(s => s.RoutineId == routineId)
+            .Select(RoutineStepViewModels.Projection)
             .ToListAsync();
         
         return Results.Ok(steps);
